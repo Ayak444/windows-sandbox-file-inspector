@@ -14,6 +14,7 @@
 /inspector-test-*/
 /inspector-e2e-*/
 /sandbox-verify-*/
+/vt-test-*/
 /.publish/
 __pycache__/
 *.pyc

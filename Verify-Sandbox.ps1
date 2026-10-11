@@ -1,7 +1,7 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath($PSScriptRoot)
-foreach ($relativePath in @('Start-Sandbox.ps1', 'Verify-Sandbox.ps1', 'Check-Files.ps1', 'Stop-Sandbox.ps1', 'Analyze-Behavior.ps1', 'Test-Behavior.ps1', 'guest-tools\Start-Session.ps1', 'guest-tools\Capture-State.ps1', 'guest-tools\Verify-Session.ps1', 'guest-tools\File-Inspector.Core.ps1', 'guest-tools\Inspect-Files.ps1', 'guest-tools\Behavior.Core.ps1', 'guest-tools\Observe-Behavior.ps1')) {
+foreach ($relativePath in @('Start-Sandbox.ps1', 'Verify-Sandbox.ps1', 'Check-Files.ps1', 'Stop-Sandbox.ps1', 'Analyze-Behavior.ps1', 'Test-Behavior.ps1', 'VirusTotal.Core.ps1', 'Check-VirusTotal.ps1', 'Test-VirusTotal.ps1', 'guest-tools\Start-Session.ps1', 'guest-tools\Capture-State.ps1', 'guest-tools\Verify-Session.ps1', 'guest-tools\File-Inspector.Core.ps1', 'guest-tools\Inspect-Files.ps1', 'guest-tools\Behavior.Core.ps1', 'guest-tools\Observe-Behavior.ps1', 'guest-tools\Import-VirusTotal.ps1')) {
     $file = Get-Item -LiteralPath (Join-Path $root $relativePath)
     $tokens = $null
     $parseErrors = $null

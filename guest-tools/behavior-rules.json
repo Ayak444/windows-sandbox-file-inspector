@@ -1,5 +1,5 @@
 {
-  "version": "offline-rules-1",
+  "version": "evidence-rules-2",
   "scoreCap": 70,
   "degradedScoreCap": 50,
   "categories": [
@@ -12,6 +12,9 @@
     {"id":"persistence_command","points":20,"title":"程序命令包含建立自動啟動的操作"},
     {"id":"persistence_reference","points":25,"title":"新增自動啟動記錄直接引用樣本路徑"},
     {"id":"external_connection","points":15,"title":"樣本程序樹觀察到對外 TCP 端點"},
-    {"id":"executable_drop","points":5,"title":"同時段有可執行檔變化（無法歸因，弱線索）"}
+    {"id":"executable_drop","points":5,"title":"同時段有可執行檔變化（無法歸因，弱線索）"},
+    {"id":"vt_multiple_malicious","points":60,"title":"VirusTotal 至少 5 個引擎標示 malicious"},
+    {"id":"vt_few_malicious","points":25,"title":"VirusTotal 1–4 個引擎標示 malicious"},
+    {"id":"vt_suspicious","points":10,"title":"VirusTotal 沒有 malicious，但有 suspicious"}
   ]
 }

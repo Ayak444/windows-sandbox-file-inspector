@@ -2,7 +2,7 @@
 
 在 Windows Sandbox 裡檢查來源不明的檔案，產生中文 HTML／JSON 報告，並提供手動測試前後的系統狀態比較。
 
-工具會建立離線、主機映射唯讀的隔離環境。靜態模式不執行檔案；新增的行為模式讓你選取並確認執行一個 EXE，記錄程序樹與行為時間線，最後給出可追溯的安全參考分。**分數不是安全機率，也不保證檔案一定安全。**
+工具會建立離線、主機映射唯讀的隔離環境。靜態模式不執行檔案；行為模式讓你選取並確認執行一個 EXE，記錄程序樹與行為時間線，最後給出可追溯的安全參考分。可另由主機查詢 VirusTotal 既有雜湊報告，沙箱保持離線。**分數不是安全機率，也不保證檔案一定安全。**
 
 ## 功能
 
@@ -14,6 +14,7 @@
 | 腳本特徵 | 部分編碼命令、動態執行、下載、防毒設定與自動啟動特徵 |
 | 壓縮檔 | ZIP 目錄中的可執行項目、VBA 巨集線索、越界路徑及異常解壓體積 |
 | Defender | 可用時執行自訂掃描，保留結束碼、病毒碼時間與原始紀錄 |
+| VirusTotal（可選、主機連網） | 用 SHA-256 查既有多引擎分類、偵測名稱與分析時間，不上傳檔案 |
 | 前後快照 | 比較程序、服務、排程、TCP 連線與部分自動啟動項目 |
 | 啟動與停止 | 拒絕共享資料夾中的符號連結／junction，可停止本專案最近一次工作階段 |
 
@@ -21,7 +22,7 @@
 
 ## 新增：離線行為分析與評分
 
-這個模式採用程序樹與時間線的分析方式，沒有接入 ANY.RUN 或 VirusTotal，也沒有多引擎掃描、完整核心監控、記憶體分析或 HTTP／DNS 封包分析。
+這個模式採用程序樹與時間線的分析方式，沒有接入 ANY.RUN 的監控，也沒有完整核心監控、記憶體分析或 HTTP／DNS 封包分析。VirusTotal 多引擎資料可由主機另外查詢既有報告並依雜湊補入，不是本機重新執行多套防毒引擎。
 
 1. 把完整程式資料夾放入 `inbox`，啟動新的沙箱。
 2. 在沙箱桌面雙擊 **`Analyze-Behavior.cmd`**（或主機的同名入口）。
@@ -57,10 +58,13 @@
 | 新增自動啟動值直接引用樣本路徑 | 25 |
 | 樣本程序樹觀察到對外 TCP 端點 | 15 |
 | 同時段可執行檔變化，未能程序歸因 | 5 |
+| VirusTotal 至少 5 個引擎標示 malicious | 60 |
+| VirusTotal 1–4 個引擎標示 malicious | 25 |
+| VirusTotal 沒有 malicious，但有 suspicious | 10 |
 
 風險點數 **60 以上為高警示、25–59 為中警示、低於 25 為本次離線觀察低警示**。這些門檻與權重是人工設定，未經良性／惡意樣本資料集校準，不是機率、偵測準確率或公認評級。
 
-離線模式沒有外網行為與多引擎驗證，因此安全參考分**最高 70 分**。感測器缺失、收集錯誤或簽章狀態無法驗證時最高 50 分；觀察沒有完成、沒有樣本程序／程序輪詢或沒有 SHA-256 時不給分。高警示證據仍會列出。
+沙箱沒有外網行為與完整核心監控，因此安全參考分**最高 70 分**。感測器缺失、收集錯誤或簽章狀態無法驗證時最高 50 分；觀察沒有完成、沒有樣本程序／程序輪詢或沒有 SHA-256 時不給分。VirusTotal 只加入命中證據，不因零偵測、查無報告或未知分類而提高分數；舊報告也可能有誤判。高警示證據仍會列出。
 
 ### 動態模式的範圍
 
@@ -71,6 +75,27 @@
 沙箱仍關閉網路；TCP 觀察不等於封包擷取，0 連線不能證明安全。短命程序可能來不及取得命令列，某些父子關係也可能缺失。感測器和報告都位於樣本可修改的沙箱內，沒有防竄改保證。
 
 目前僅支援 EXE 啟動。進階使用者可在沙箱內用 `Observe-Behavior.ps1 -SamplePath <Samples內的EXE> -DurationSeconds 120` 指定 10–300 秒觀察窗；其他格式請先使用靜態模式。大於 1 秒的輪詢間隔可能因系統查詢耗時而延長，實際時間會寫入報告。
+
+## VirusTotal 雜湊查詢與大檔案
+
+在**主機**雙擊 `Check-VirusTotal.cmd`，選取原始待測檔案。工具以固定大小緩衝區串流計算 SHA-256，再用主機連網查詢 VirusTotal 既有報告。檔案本體不會上傳，也不會觸發重新掃描；只把雜湊傳給 VirusTotal。
+
+第一次執行會提示以隱藏方式輸入你自己的 API key，輸入只供該次查詢，不儲存至檔案。進階使用者也可自行在主機環境設定 `VT_API_KEY`；工具不會自動儲存 key。不要把 key 貼進聊天、放入 `inbox`、寫進原始碼或提交 Git。可由 [VirusTotal Getting Started](https://docs.virustotal.com/reference/getting-started) 了解取得 key 的方式。
+
+主機報告位於 `reports\VirusTotal-<時間>-<雜湊前綴>\report.html`／`report.json`，含各引擎分類、偵測名稱與既有分析日期。這些本機報告已由 `.gitignore` 排除。
+
+如有執行中的新版沙箱，工具會嘗試把不含 API key 的小型統計摘要送進沙箱，只補入 SHA-256 完全相同的既有行為報告，重新計算評分；可重新整理沙箱中的報告頁面。主機 key、檔案路徑與檔案本體不會傳入沙箱。若沒有相符報告，主機報告仍可單獨查看。升級後需重新啟動沙箱，才能使用新的接收器。
+
+### 「不限大小」的實際意義
+
+- 已取消本機原有 **單檔 2 GB 與每次 10 GB 總雜湊額度**，SHA-256 採用串流處理，不把整個大檔案載入記憶體。沒有應用程式設定的檔案大小門檻，但仍受檔案系統、磁碟空間、讀取權限與處理時間限制。
+- 雜湊查詢沒有檔案上傳大小門檻，但只會取得**同一完整檔案雜湊已存在**的報告；不存在就顯示 `NotFound`，不能變成新掃描。資料庫仍可能沒有該大檔案。
+- VirusTotal 官方一般上傳上限仍為 **650 MB**，本工具不能移除伺服器限制，也沒有上傳入口。[官方大檔案說明](https://gtidocs.virustotal.com/reference/files-upload-url)
+- 不把任意切割後的片段當成原檔案驗證結果。壓縮包／遊戲資料夾可在沙箱內解壓，再查真正的內部 EXE／DLL；內部檔案的報告不等於整個壓縮包已通過。
+
+Public API 目前限制每分鐘 4 次、每日 500 次；本工具會將自己的請求間隔至少 16 秒，仍可能受同帳號其他使用影響。HTTP 429、401／403、查無報告或回應錯誤會清楚標示，不會假裝零偵測。Premium 配額依授權而定；請遵守 [官方 API 使用限制](https://docs.virustotal.com/reference/public-vs-premium-api)。
+
+`undetected` 不等於 `harmless`；超時、不支援與掃描失敗也各自列出。既有分析時間未知或超過 30 天會提示可能過時，但不自動重新掃描。
 
 ## 系統需求
 
@@ -165,7 +190,7 @@ Get-Content "$env:USERPROFILE\Desktop\Analysis\changes.txt"
 | 項目 | 上限／行為 |
 | --- | --- |
 | 檔案清單 | 每次最多 2000 個檔案 |
-| SHA-256 | 單檔最多 2 GB，每次總雜湊額度 10 GB |
+| SHA-256 | 串流讀取，沒有應用程式設定的單檔／總大小門檻 |
 | 腳本文字 | 只比對前 64 KiB 的部分特徵 |
 | ZIP | 最多 5000 個目錄項目，不解壓或逐一分析內部內容 |
 | RAR／7z | 不展開內容，需在沙箱內解壓後重新檢查 |
@@ -175,7 +200,7 @@ Get-Content "$env:USERPROFILE\Desktop\Analysis\changes.txt"
 
 SHA-256 是識別值，不是可信度評分。網路關閉時，需要連網或會辨識虛擬機的惡意程式可能不發作。樣本執行後也可能修改沙箱內的報告與紀錄。Windows Sandbox 可降低風險，但不能保證抵禦所有漏洞；請保持 Windows 更新。
 
-工具沒有檔案上傳功能，也不啟用沙箱網路。主機原本的防毒、雲端提交與檔案處理行為不由本工具控制。
+工具沒有檔案上傳功能，也不啟用沙箱網路。只有使用 `Check-VirusTotal.cmd` 時，主機才會把雜湊傳給 VirusTotal 查詢。主機原本的防毒、雲端提交與檔案處理行為不由本工具控制。
 
 ## 專案結構
 
@@ -184,10 +209,13 @@ SHA-256 是識別值，不是可信度評分。網路關閉時，需要連網或
 ├── Start-Sandbox.cmd / .ps1          # 產生設定、建立沙箱與連線
 ├── Check-Files.cmd / .ps1            # 主機檢查入口，只轉送到沙箱
 ├── Analyze-Behavior.cmd / .ps1       # 選取 EXE、離線執行與行為評分
+├── Check-VirusTotal.cmd / .ps1       # 主機雜湊查詢與報告整合
+├── VirusTotal.Core.ps1               # 串流雜湊、API 狀態與多引擎報告
 ├── Stop-Sandbox.cmd / .ps1           # 停止最近一次工作階段
 ├── Verify-Sandbox.ps1               # 設定與啟動防護測試
 ├── Test-File-Inspector.ps1           # 無害樣本的核心測試
 ├── Test-Behavior.ps1                 # 評分、資料不足、證據歸因測試
+├── Test-VirusTotal.ps1               # API 回應、雜湊與評分測試
 ├── Test-Inspector-In-Sandbox.ps1     # 獨立沙箱的完整流程測試
 ├── prepare-inspector.py             # 開發時處理 UTF-8 BOM
 ├── inbox/                           # 本機樣本，不提交 Git
@@ -199,6 +227,7 @@ SHA-256 是識別值，不是可信度評分。網路關閉時，需要連網或
     ├── Observe-Behavior.ps1          # EXE 啟動、事件收集與行為報告
     ├── Behavior.Core.ps1             # 證據規則、評分與程序樹報告
     ├── behavior-rules.json           # 可檢視與調整的評分權重
+    ├── Import-VirusTotal.ps1          # 僅接收同雜湊統計，不接收 API key
     ├── Capture-State.ps1             # 前後系統快照
     ├── Verify-Session.ps1            # 驗證桌面、路由與唯讀映射
     ├── Test-Guest-Inspector.ps1       # 隔離環境的無害驗證
@@ -218,6 +247,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-File-Inspector.ps
 # 規則評分、重複證據、背景差異與報告跳脫
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-Behavior.ps1
 
+# 模擬雲端回應，不呼叫 API 或上傳檔案
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-VirusTotal.ps1
+
+# 可選：建立、雜湊並刪除一個 2 GB 以上無害測試檔
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-VirusTotal.ps1 -LargeFile
+
 # 隔離設定、junction 拒絕及主機誤執行防護
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Verify-Sandbox.ps1
 
@@ -225,7 +260,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Verify-Sandbox.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-Inspector-In-Sandbox.ps1
 ```
 
-完整流程測試只映射自建無害檔案，並在沙箱內編譯及執行無害測試 EXE，驗證子程序、檔案寫入、測試自動啟動引用及行為報告，不測試使用者的 `inbox`。若受限制的環境禁止建立 junction，請在一般 PowerShell 執行設定測試。
+完整流程測試只映射自建無害檔案，並在沙箱內編譯及執行無害測試 EXE，驗證子程序、檔案寫入、測試自動啟動引用與模擬 VirusTotal 摘要的雜湊對應，不測試使用者的 `inbox`，也不呼叫雲端。若受限制的環境禁止建立 junction，請在一般 PowerShell 執行設定測試。
 
 中文 PowerShell 原始碼需要保留 UTF-8 BOM，確保 Windows PowerShell 5.1 正確讀取。修改相關檔案後，可使用 Python 3 執行：
 

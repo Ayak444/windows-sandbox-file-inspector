@@ -24,13 +24,11 @@ New-Item -ItemType Directory -Path $output -Force | Out-Null
 try {
     $inventory = Get-InspectionFiles -Path $fullPath
     $results = [Collections.Generic.List[object]]::new()
-    $hashBudget = [long]10737418240
     $index = 0
     foreach ($file in $inventory.Files) {
         $index++
         Write-Progress -Activity 'Inspecting files (no sample execution)' -Status "$index / $($inventory.Files.Count): $($file.Name)" -PercentComplete (($index / [Math]::Max(1,$inventory.Files.Count)) * 100)
-        $item = Get-FileInspection -File $file -Root $samples -MaxHashBytes ([Math]::Min(2147483648, $hashBudget))
-        if ($item.SHA256) { $hashBudget -= $file.Length }
+        $item = Get-FileInspection -File $file -Root $samples
         $results.Add($item)
     }
     Write-Progress -Activity 'Inspecting files (no sample execution)' -Completed

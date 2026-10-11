@@ -34,7 +34,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Could not run isolated behavior tests.' }
     $check = $raw | Out-String | ConvertFrom-Json
     if ($check.ExitCode -ne 0) { throw "Isolated behavior validation failed: $($check.ExitCode)" }
-    Write-Host 'PASS: benign EXE observed inside sandbox, child process tree, file event, autorun evidence, score and report'
+    Write-Host 'PASS: benign EXE telemetry, scoring, report and hash-matched synthetic VirusTotal enrichment'
     $validationPassed = $true
 } finally {
     if ($KeepOnFailure -and !$validationPassed -and $sessionId) {

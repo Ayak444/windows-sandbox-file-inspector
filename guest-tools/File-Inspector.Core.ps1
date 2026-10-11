@@ -26,7 +26,7 @@ function Get-InspectionFiles {
 }
 
 function Get-FileInspection {
-    param([IO.FileInfo]$File, [string]$Root, [long]$MaxHashBytes = 2147483648)
+    param([IO.FileInfo]$File, [string]$Root, [long]$MaxHashBytes = [long]::MaxValue)
     $findings = [Collections.Generic.List[string]]::new()
     $limits = [Collections.Generic.List[string]]::new()
     $result = [ordered]@{
@@ -70,7 +70,7 @@ function Get-FileInspection {
                         if ([IO.Path]::GetExtension($name).ToLowerInvariant() -in ($executables + $scripts + @('.lnk','.msi'))) {
                             $findings.Add("壓縮檔內含可執行項目：$name")
                         }
-                        if ($entry.Length -gt 1073741824 -and ($entry.CompressedLength -eq 0 -or $entry.Length / [Math]::Max(1,$entry.CompressedLength) -gt 1000)) {
+                        if ($entry.Length -gt 1073741824 -and ($entry.CompressedLength -eq 0 -or $entry.Length / [Math]::Max([long]1,$entry.CompressedLength) -gt 1000)) {
                             $findings.Add('ZIP 項目解壓後體積與壓縮比例異常。')
                         }
                         $expanded += $entry.Length

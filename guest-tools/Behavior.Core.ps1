@@ -30,6 +30,15 @@ function Get-BehaviorAssessment {
     }
     $drop = @($Data.FileEvents | Where-Object { $_.Kind -in @('Created','Changed','Renamed') -and [IO.Path]::GetExtension($_.Path).ToLowerInvariant() -in @('.exe','.dll','.sys','.scr','.ps1','.bat','.cmd','.vbs','.js') })
     if ($drop.Count -gt 0) { Add-BehaviorEvidence executable_drop 'FileSystemWatcher（時間相關，非程序歸因）' $drop[0].Path }
+    if ($Data.PSObject.Properties.Name -contains 'VirusTotal') {
+        $vt=$Data.VirusTotal
+        if ($null -ne $vt -and $vt.Status -eq 'Found' -and $vt.Hash -eq $Data.Static.SHA256 -and $null -ne $vt.Stats) {
+            $detail='分析時間：'+$vt.AnalysisAt+'；malicious='+$vt.Stats.malicious+'，suspicious='+$vt.Stats.suspicious+'；這是既有報告，可能有誤判或過時。'
+            if ($vt.Stats.malicious -ge 5) { Add-BehaviorEvidence vt_multiple_malicious 'VirusTotal SHA-256 既有報告' $detail }
+            elseif ($vt.Stats.malicious -gt 0) { Add-BehaviorEvidence vt_few_malicious 'VirusTotal SHA-256 既有報告' $detail }
+            elseif ($vt.Stats.suspicious -gt 0) { Add-BehaviorEvidence vt_suspicious 'VirusTotal SHA-256 既有報告' $detail }
+        }
+    }
     $categories = @($evidence | Group-Object Category)
     $risk = 0
     foreach ($category in $categories) { $risk += [int]$category.Group[0].Points }
@@ -48,7 +57,7 @@ function Get-BehaviorAssessment {
     [pscustomobject]@{
         RuleVersion=$Rules.version; SafetyReferenceScore=$score; RiskPoints=$risk; ScoreCap=$cap; Level=$level
         Evidence=@($evidence.ToArray()); ChargedCategories=@($categories | ForEach-Object { $_.Name })
-        Explanation='分數為規則參考值，不是安全機率。每類只扣一次；未聯網、無多引擎驗證與無完整核心監控，因此最高 70 分；感測器降級最高 50 分。資料不足時不給分。'
+        Explanation='分數為規則參考值，不是安全機率。每類只扣一次；沙箱未聯網、無完整核心監控，因此最高 70 分；感測器或簽章資料降級最高 50 分。VirusTotal 只會加入命中證據，不會因零偵測提高分數。資料不足時不給分。'
     }
 }
 
@@ -117,6 +126,14 @@ body{margin:0;background:#101724;color:#e0e8f4;font:15px/1.65 'Segoe UI',sans-se
     foreach ($row in $Data.Connections) { [void]$html.Append('<pre>'+ (Encode-BehaviorText ($row | ConvertTo-Json -Compress)) +'</pre>') }
     [void]$html.Append('</section><section id="coverage" class="card"><h2>觀察完整度</h2><p>程序建立事件：'+$Data.ProcessTraceAvailable+' · 檔案監看：'+$Data.FileWatchAvailable+' · 完成觀察：'+$Data.Completed+' · 程序輪詢次數：'+$Data.ProcessPolls+'</p><p>監看範圍：Samples、使用者 Roaming、Local Temp。不是全磁碟／全登錄監控；無程序注入、記憶體、封包或核心防竄改感測器。</p><p>Defender：'+ (Encode-BehaviorText $Data.Defender.Status) +' · '+ (Encode-BehaviorText $Data.Defender.Detail) +'</p>')
     foreach ($errorText in $Data.Errors) { [void]$html.Append('<p class="positive">'+ (Encode-BehaviorText $errorText) +'</p>') }
+    if ($Data.PSObject.Properties.Name -contains 'VirusTotal' -and $null -ne $Data.VirusTotal) {
+        $vt=$Data.VirusTotal
+        [void]$html.Append('<h2>VirusTotal 多引擎證據</h2><p>狀態：'+(Encode-BehaviorText $vt.Status)+' · 既有分析時間：'+(Encode-BehaviorText $vt.AnalysisAt)+'</p><p>'+(Encode-BehaviorText $vt.Detail)+'</p>')
+        if ($vt.Status -eq 'Found' -and $null -ne $vt.Stats) {
+            [void]$html.Append('<p>malicious：'+$vt.Stats.malicious+' · suspicious：'+$vt.Stats.suspicious+' · undetected：'+$vt.Stats.undetected+' · harmless：'+$vt.Stats.harmless+'</p>')
+            if ($null -eq $vt.AnalysisAgeDays -or $vt.AnalysisAgeDays -gt 30) { [void]$html.Append('<p class="positive">報告時間未知或超過 30 天；這不是本次重新掃描。</p>') }
+        }
+    }
     [void]$html.Append('<p>短命程序可能只有名稱／PID，查不到命令列；事件遺失、PID 重用、惡意程式停用感測器與沙箱偵測可能影響結果。分數未經惡意／良性樣本資料集校準，僅供排序與人工判讀。</p></section></main></body></html>')
     $html.ToString()
 }
