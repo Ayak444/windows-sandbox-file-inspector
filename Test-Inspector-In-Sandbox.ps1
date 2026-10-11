@@ -1,9 +1,11 @@
+param([switch]$KeepOnFailure)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath($PSScriptRoot)
 $fixture = Join-Path $root ('inspector-e2e-' + [Guid]::NewGuid().ToString('N'))
 $cli = Get-Command wsb.exe -CommandType Application -ErrorAction Stop
 $sessionId = $null
+$validationPassed = $false
 try {
     New-Item -ItemType Directory -Path $fixture, (Join-Path $fixture 'inbox') -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $root 'Start-Sandbox.ps1') -Destination $fixture
@@ -28,7 +30,17 @@ try {
     $check = $raw | Out-String | ConvertFrom-Json
     if ($check.ExitCode -ne 0) { throw "Isolated inspector validation failed: $($check.ExitCode)" }
     Write-Host 'PASS: actual sandbox inspection, signature call, hash, feature hit, JSON and HTML report'
+    $raw = & $cli.Source exec --id $sessionId --run-as ExistingLogin --command 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\SandboxTools\Test-Guest-Behavior.ps1' --raw
+    if ($LASTEXITCODE -ne 0) { throw 'Could not run isolated behavior tests.' }
+    $check = $raw | Out-String | ConvertFrom-Json
+    if ($check.ExitCode -ne 0) { throw "Isolated behavior validation failed: $($check.ExitCode)" }
+    Write-Host 'PASS: benign EXE observed inside sandbox, child process tree, file event, autorun evidence, score and report'
+    $validationPassed = $true
 } finally {
+    if ($KeepOnFailure -and !$validationPassed -and $sessionId) {
+        Write-Host "Diagnostic sandbox retained: $sessionId"
+        Write-Host "Fixture: $fixture"
+    } else {
     if ($sessionId) {
         & $cli.Source stop --id $sessionId --raw
         if ($LASTEXITCODE -ne 0) { throw 'Test sandbox stop failed; preserving its fixture.' }
@@ -36,4 +48,5 @@ try {
     $absoluteFixture = [IO.Path]::GetFullPath($fixture)
     if (!$absoluteFixture.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Unsafe fixture cleanup path' }
     if (Test-Path -LiteralPath $absoluteFixture) { Remove-Item -LiteralPath $absoluteFixture -Recurse -Force }
+    }
 }

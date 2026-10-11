@@ -1,0 +1,17 @@
+{
+  "version": "offline-rules-1",
+  "scoreCap": 70,
+  "degradedScoreCap": 50,
+  "categories": [
+    {"id":"signature_mismatch","points":30,"title":"簽章雜湊不一致"},
+    {"id":"unsigned","points":5,"title":"樣本未簽章（弱線索）"},
+    {"id":"defender_attention","points":10,"title":"Defender 偵測或掃描錯誤（未確認）"},
+    {"id":"encoded_shell","points":25,"title":"子程序命令含編碼或動態執行"},
+    {"id":"download_command","points":15,"title":"程序命令包含下載操作"},
+    {"id":"security_change_command","points":35,"title":"程序命令包含修改防毒設定"},
+    {"id":"persistence_command","points":20,"title":"程序命令包含建立自動啟動的操作"},
+    {"id":"persistence_reference","points":25,"title":"新增自動啟動記錄直接引用樣本路徑"},
+    {"id":"external_connection","points":15,"title":"樣本程序樹觀察到對外 TCP 端點"},
+    {"id":"executable_drop","points":5,"title":"同時段有可執行檔變化（無法歸因，弱線索）"}
+  ]
+}

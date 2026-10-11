@@ -6,6 +6,8 @@ for relative in (
     'guest-tools/File-Inspector.Core.ps1',
     'Test-File-Inspector.ps1',
     'guest-tools/Test-Guest-Inspector.ps1',
+    'guest-tools/Behavior.Core.ps1',
+    'Test-Behavior.ps1',
 ):
     path = root / relative
     source = path.read_text(encoding='utf-8-sig')

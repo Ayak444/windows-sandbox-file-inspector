@@ -1,7 +1,7 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath($PSScriptRoot)
-foreach ($relativePath in @('Start-Sandbox.ps1', 'Verify-Sandbox.ps1', 'Check-Files.ps1', 'Stop-Sandbox.ps1', 'guest-tools\Start-Session.ps1', 'guest-tools\Capture-State.ps1', 'guest-tools\Verify-Session.ps1', 'guest-tools\File-Inspector.Core.ps1', 'guest-tools\Inspect-Files.ps1')) {
+foreach ($relativePath in @('Start-Sandbox.ps1', 'Verify-Sandbox.ps1', 'Check-Files.ps1', 'Stop-Sandbox.ps1', 'Analyze-Behavior.ps1', 'Test-Behavior.ps1', 'guest-tools\Start-Session.ps1', 'guest-tools\Capture-State.ps1', 'guest-tools\Verify-Session.ps1', 'guest-tools\File-Inspector.Core.ps1', 'guest-tools\Inspect-Files.ps1', 'guest-tools\Behavior.Core.ps1', 'guest-tools\Observe-Behavior.ps1')) {
     $file = Get-Item -LiteralPath (Join-Path $root $relativePath)
     $tokens = $null
     $parseErrors = $null
@@ -26,7 +26,7 @@ if ($mappings[0].HostFolder -ne (Join-Path $root 'inbox') -or
 Write-Host 'PASS: offline configuration and only two read-only mappings'
 Compare-Object -ReferenceObject @() -DifferenceObject @() | Out-Null
 Write-Host 'PASS: empty snapshot comparison'
-foreach ($script in @('Start-Session.ps1', 'Capture-State.ps1', 'Verify-Session.ps1', 'Inspect-Files.ps1')) {
+foreach ($script in @('Start-Session.ps1', 'Capture-State.ps1', 'Verify-Session.ps1', 'Inspect-Files.ps1', 'Observe-Behavior.ps1')) {
     $rejected = $false
     try { & (Join-Path $root ('guest-tools\' + $script)) }
     catch {

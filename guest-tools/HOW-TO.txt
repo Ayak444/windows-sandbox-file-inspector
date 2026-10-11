@@ -5,6 +5,10 @@ OFFLINE FILE TESTING — WINDOWS SANDBOX
 3. Open or run one sample manually. Use Task Manager to observe activity.
    BEFORE opening a sample, double-click Check-Files.cmd on this desktop for
    static checks and a Chinese HTML report. It does not execute sample files.
+   For execution telemetry, use Analyze-Behavior.cmd, select an EXE in Samples,
+   confirm execution and interact with it during the 60-second observation.
+   Review its process tree, timeline and evidence-based reference score.
+   Scores are heuristic, capped at 70 offline, never a safety guarantee.
 4. Double-click Capture-After.cmd. Read Analysis\changes.txt and before/after.json
    with PowerShell Get-Content or an editor installed inside this sandbox.
 5. Close Windows Sandbox and confirm disposal when finished. All guest results

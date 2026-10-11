@@ -32,6 +32,7 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File C:\SandboxTools\
 pause
 '@ | Set-Content -LiteralPath (Join-Path $desktop 'Capture-After.cmd') -Encoding ASCII
 Copy-Item -LiteralPath 'C:\SandboxTools\Check-Files.cmd' -Destination (Join-Path $desktop 'Check-Files.cmd') -Force
+Copy-Item -LiteralPath 'C:\SandboxTools\Analyze-Behavior.cmd' -Destination (Join-Path $desktop 'Analyze-Behavior.cmd') -Force
 $failureCode = 25
 & 'C:\SandboxTools\Capture-State.ps1' -Label before
 $failureCode = 26
