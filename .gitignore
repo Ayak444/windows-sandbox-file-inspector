@@ -1,0 +1,30 @@
+# User-supplied samples: keep only the empty-folder marker and instructions.
+/inbox/*
+!/inbox/.gitkeep
+!/inbox/PUT_FILES_HERE.txt
+
+# Generated host paths, session IDs and reports.
+/Offline-Sandbox.wsb
+/Sandbox-Session.txt
+/Analysis/
+/reports/
+/Samples/
+
+# Owned temporary test fixtures and local publishing helpers.
+/inspector-test-*/
+/inspector-e2e-*/
+/sandbox-verify-*/
+/.publish/
+__pycache__/
+*.pyc
+*.log
+
+# Local configuration and credentials.
+.env
+.env.*
+.codex/
+.agents/
+.aws/
+.DS_Store
+Thumbs.db
+Desktop.ini

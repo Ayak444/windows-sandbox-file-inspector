@@ -1,0 +1,21 @@
+OFFLINE FILE TESTING — WINDOWS SANDBOX
+
+1. Work only in this Windows Sandbox window.
+2. Samples contains disposable copies of the host inbox. Nothing is auto-executed.
+3. Open or run one sample manually. Use Task Manager to observe activity.
+   BEFORE opening a sample, double-click Check-Files.cmd on this desktop for
+   static checks and a Chinese HTML report. It does not execute sample files.
+4. Double-click Capture-After.cmd. Read Analysis\changes.txt and before/after.json
+   with PowerShell Get-Content or an editor installed inside this sandbox.
+5. Close Windows Sandbox and confirm disposal when finished. All guest results
+   are discarded. Record findings with host screenshots if needed.
+
+Networking, clipboard, microphone, camera, printer and vGPU sharing are disabled.
+Host mappings C:\Incoming and C:\SandboxTools are READ ONLY.
+Do not enable extra sharing or sign in to personal accounts here.
+
+These are point-in-time snapshots, not a malware detector. Absence of changes
+does not establish safety. Offline or VM-aware malware can remain inactive.
+Apps requiring Office, PDF readers or other dependencies need those installed
+inside the sandbox from trusted offline installers. Some Windows Store apps
+(including Notepad on certain Windows versions) may not be present.

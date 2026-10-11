@@ -1,0 +1,4 @@
+Put only files you intend to test here. Do not open or run them on the host.
+Start the sandbox with Start-Sandbox.cmd in the parent folder.
+Samples are copied into the sandbox desktop and are never auto-executed.
+Do not place private files, symbolic links or directory junctions here.
